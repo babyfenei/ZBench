@@ -96,7 +96,7 @@ if  [ ! -e '/tmp/besttrace' ]; then
     echo "Installing Besttrace......"
     dir=$(pwd)
     cd /tmp/
-    wget  -N --no-check-certificate https://raw.githubusercontent.com/babyfenei/ZBench/master/besttrace > /dev/null 2>&1
+    wget  -N --no-check-certificate https://raw.githubusercontent.com/FunctionClub/ZBench/master/besttrace > /dev/null 2>&1
     cd $dir
 fi
 chmod a+rx /tmp/besttrace
@@ -129,7 +129,7 @@ if  [ ! -e '/tmp/ZPing-CN.py' ]; then
     echo "Installing ZPing-CN.py......"
     dir=$(pwd)
     cd /tmp/
-    wget -N --no-check-certificate https://raw.githubusercontent.com/babyfenei/ZBench/master/ZPing-CN.py > /dev/null 2>&1
+    wget -N --no-check-certificate https://raw.githubusercontent.com/FunctionClub/ZBench/master/ZPing-CN.py > /dev/null 2>&1
     cd $dir
 fi
 chmod a+rx /tmp/ZPing-CN.py
@@ -281,52 +281,16 @@ disk_size1=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot
 disk_size2=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem' | awk '{print $3}' ))
 disk_total_size=$( calc_disk ${disk_size1[@]} )
 disk_used_size=$( calc_disk ${disk_size2[@]} )
-NIC=$(ip r | awk '/^default/{print $5}' | head -1)
-IP=$(ip r | grep -Fv "default " | grep "dev $NIC.*src " | head -1 | awk '{print $9}')
 
-function get_board() {
-    MSG=$(dmidecode -t1)
-    MANUFACTURER=$(echo "$MSG" | grep -F "Manufacturer" | sed 's/.*: //;s/ *$//g')
-    PRODUCT=$(echo "$MSG" | grep -F "Product" | sed 's/.*: //;s/ *$//g')
-    if [[ "$MANUFACTURER" == "" ]]; then
-        MANUFACTURER="UNKNOWN"
-    fi
-    if [[ "$PRODUCT" == "" ]]; then
-        PRODUCT="UNKNOWN"
-    fi
-    echo "[$MANUFACTURER] [$PRODUCT]"
-}
-
-function check_driver() {
-    DRV=$(ethtool -i "$NIC" | head -1 | awk '{print $2}')
-    echo "[$DRV]"
-    return
-    DRV_WL="e1000e igb ixgbe"
-    MSG=$(
-        for i in $DRV; do
-                echo "$DRV_WL" | grep -q "$i" || echo "$i"
-        done | xargs
-        )
-    if [[ "$MSG" == "" ]]; then
-        RET="[$DRV]"
-    else
-        RET="[$MSG]"
-        touch /dev/shm/TOIDC
-    fi
-    echo "$RET"
-}
 
 clear
 next
-echo -e "设备型号             : ${SKYBLUE}$(get_board)"
 echo -e "CPU 型号             : ${SKYBLUE}$cname${PLAIN}"
 echo -e "CPU 核心数           : ${SKYBLUE}$cores${PLAIN}"
 echo -e "CPU 频率             : ${SKYBLUE}$freq MHz${PLAIN}"
 echo -e "总硬盘大小           : ${SKYBLUE}$disk_total_size GB ($disk_used_size GB Used)${PLAIN}"
 echo -e "总内存大小           : ${SKYBLUE}$tram MB ($uram MB Used)${PLAIN}"
 echo -e "SWAP大小             : ${SKYBLUE}$swap MB ($uswap MB Used)${PLAIN}"
-echo -e "网卡:                ：${SKYBLUE}$NIC"
-echo -e "网卡驱动             : ${SKYBLUE}$(check_driver)"
 echo -e "开机时长             : ${SKYBLUE}$up${PLAIN}"
 echo -e "系统负载             : ${SKYBLUE}$load${PLAIN}"
 echo -e "系统                 : ${SKYBLUE}$opsy${PLAIN}"
@@ -371,35 +335,35 @@ echo $io2 >> /tmp/info.txt
 echo $io3 >> /tmp/info.txt
 AKEY=$( uuid )
 
-##printf "%-30s%-20s%-24s%-12s\n" "节点名称" "IP地址" "下载速度" "延迟"
-##speed && next
+printf "%-30s%-20s%-24s%-12s\n" "节点名称" "IP地址" "下载速度" "延迟"
+speed && next
 printf "%-30s%-22s%-24s%-12s\n" "节点名称" "上传速度" "下载速度" "延迟"
 speed_cn && next
 python /tmp/ZPing-CN.py
 next
 
-# NetCFspeec=$( sed -n "2p" /tmp/speed.txt )
-# NetCFping=$( sed -n "3p" /tmp/speed.txt )
-# NetLJPspeed=$( sed -n "5p" /tmp/speed.txt )
-# NetLJPping=$( sed -n "6p" /tmp/speed.txt )
-# NetLSGspeed=$( sed -n "8p" /tmp/speed.txt )
-# NetLSGping=$( sed -n "9p" /tmp/speed.txt )
-# NetLUKspeed=$( sed -n "11p" /tmp/speed.txt )
-# NetLUKping=$( sed -n "12p" /tmp/speed.txt )
-# NetLDEspeed=$( sed -n "14p" /tmp/speed.txt )
-# NetLDEping=$( sed -n "15p" /tmp/speed.txt )
-# NetLCAspeed=$( sed -n "17p" /tmp/speed.txt )
-# NetLCAping=$( sed -n "18p" /tmp/speed.txt )
-# NetSTXspeed=$( sed -n "20p" /tmp/speed.txt )
-# NetSTXping=$( sed -n "21p" /tmp/speed.txt )
-# NetSWAspeed=$( sed -n "23p" /tmp/speed.txt )
-# NetSWAping=$( sed -n "24p" /tmp/speed.txt )
-# NetSDEspeed=$( sed -n "26p" /tmp/speed.txt )
-# NetSDEping=$( sed -n "27p" /tmp/speed.txt )
-# NetSSGspeed=$( sed -n "29p" /tmp/speed.txt )
-# NetSSGping=$( sed -n "30p" /tmp/speed.txt )
-# NetSCNspeed=$( sed -n "32p" /tmp/speed.txt )
-# NetSCNping=$( sed -n "33p" /tmp/speed.txt )
+NetCFspeec=$( sed -n "2p" /tmp/speed.txt )
+NetCFping=$( sed -n "3p" /tmp/speed.txt )
+NetLJPspeed=$( sed -n "5p" /tmp/speed.txt )
+NetLJPping=$( sed -n "6p" /tmp/speed.txt )
+NetLSGspeed=$( sed -n "8p" /tmp/speed.txt )
+NetLSGping=$( sed -n "9p" /tmp/speed.txt )
+NetLUKspeed=$( sed -n "11p" /tmp/speed.txt )
+NetLUKping=$( sed -n "12p" /tmp/speed.txt )
+NetLDEspeed=$( sed -n "14p" /tmp/speed.txt )
+NetLDEping=$( sed -n "15p" /tmp/speed.txt )
+NetLCAspeed=$( sed -n "17p" /tmp/speed.txt )
+NetLCAping=$( sed -n "18p" /tmp/speed.txt )
+NetSTXspeed=$( sed -n "20p" /tmp/speed.txt )
+NetSTXping=$( sed -n "21p" /tmp/speed.txt )
+NetSWAspeed=$( sed -n "23p" /tmp/speed.txt )
+NetSWAping=$( sed -n "24p" /tmp/speed.txt )
+NetSDEspeed=$( sed -n "26p" /tmp/speed.txt )
+NetSDEping=$( sed -n "27p" /tmp/speed.txt )
+NetSSGspeed=$( sed -n "29p" /tmp/speed.txt )
+NetSSGping=$( sed -n "30p" /tmp/speed.txt )
+NetSCNspeed=$( sed -n "32p" /tmp/speed.txt )
+NetSCNping=$( sed -n "33p" /tmp/speed.txt )
 
 
 NetUPST=$( sed -n "4p" /tmp/speed_cn.txt )
@@ -428,15 +392,15 @@ NetDWCM=$( sed -n "26p" /tmp/speed_cn.txt )
 NetPiCM=$( sed -n "27p" /tmp/speed_cn.txt )
 
 
-wget -N --no-check-certificate https://raw.githubusercontent.com/babyfenei/ZBench/master/Generate.py >> /dev/null 2>&1
+wget -N --no-check-certificate https://raw.githubusercontent.com/FunctionClub/ZBench/master/Generate.py >> /dev/null 2>&1
 python Generate.py && rm -rf Generate.py && cp /root/report.html /tmp/report/index.html
-# TSM=$( cat /tmp/shm.txt_table )
-# TST=$( cat /tmp/sht.txt_table )
-# TSU=$( cat /tmp/shu.txt_table )
-# TGM=$( cat /tmp/gdm.txt_table )
-# TGT=$( cat /tmp/gdt.txt_table )
-# TGU=$( cat /tmp/gdu.txt_table )
-curl 'http://api.zbench.kirito.moe/action.php' --data "CPUmodel=$cname &CPUspeed=$freq MHz &CPUcore=$cores &HDDsize=$disk_total_size GB ($disk_used_size GB 已使用) &RAMsize=$tram MB ($uram MB 已使用)&SWAPsize=$swap MB ($uswap MB 已使用)&UPtime= $up&Arch=1&systemload=$load&OS= $opsy &Arch=$arch ($lbit 位)&Kernel=$kern &Virmethod=$virtua &IOa=$io1&IOb=$io2&IOc=$io3&NetCFspeec=$NetCFspeec&NetCFping=$NetCFping&NetLJPspeed=$NetLJPspeed&NetLJPping=$NetLJPping&NetLSGspeed=$NetLSGspeed&NetLSGping=$NetLSGping&NetLUKspeed=$NetLUKspeed&NetLUKping=$NetLUKping&NetLDEspeed=$NetLDEspeed&NetLDEping=$NetLDEping&NetLCAspeed=$NetLCAspeed&NetLCAping=$NetLCAping&NetSTXspeed=$NetSTXspeed&NetSTXping=$NetSTXping&NetSWAspeed=$NetSWAspeed&NetSWAping=$NetSWAping&NetSDEspeed=$NetSDEspeed&NetSDEping=$NetSDEping&NetSSGspeed=$NetSSGspeed&NetSSGping=$NetSSGping&NetSCNspeed=$NetSCNspeed&NetSCNping=$NetSCNping&NetUPST=$NetUPST&NetDWST=$NetDWST&NetPiST=$NetPiST&NetUPCT=$NetUPCT&NetDWCT=$NetDWCT&NetPiCT=$NetPiCT&NetUPXT=$NetUPXT&NetDWXT=$NetDWXT&NetPiXT=$NetPiXT&NetUPSU=$NetUPSU&NetDWSU=$NetDWSU&NetPiSU=$NetPiSU&NetUPCU=$NetUPCU&NetDWCU=$NetDWCU&NetPiCU=$NetPiCU&NetUPXM=$NetUPXM&NetDWXM=$NetDWXM&NetPiXM=$NetPiXM&NetUPSM=$NetUPSM&NetDWSM=$NetDWSM&NetPiSM=$NetPiSM&NetUPCM=$NetUPCM&NetDWCM=$NetDWCM&NetPiCM=$NetPiCM&AKEY=$AKEY&Provider=$Provider"
+TSM=$( cat /tmp/shm.txt_table )
+TST=$( cat /tmp/sht.txt_table )
+TSU=$( cat /tmp/shu.txt_table )
+TGM=$( cat /tmp/gdm.txt_table )
+TGT=$( cat /tmp/gdt.txt_table )
+TGU=$( cat /tmp/gdu.txt_table )
+curl 'http://api.zbench.kirito.moe/action.php' --data "CPUmodel=$cname &CPUspeed=$freq MHz &CPUcore=$cores &HDDsize=$disk_total_size GB ($disk_used_size GB 已使用) &RAMsize=$tram MB ($uram MB 已使用)&SWAPsize=$swap MB ($uswap MB 已使用)&UPtime= $up&Arch=1&systemload=$load&OS= $opsy &Arch=$arch ($lbit 位)&Kernel=$kern &Virmethod=$virtua &IOa=$io1&IOb=$io2&IOc=$io3&NetCFspeec=$NetCFspeec&NetCFping=$NetCFping&NetLJPspeed=$NetLJPspeed&NetLJPping=$NetLJPping&NetLSGspeed=$NetLSGspeed&NetLSGping=$NetLSGping&NetLUKspeed=$NetLUKspeed&NetLUKping=$NetLUKping&NetLDEspeed=$NetLDEspeed&NetLDEping=$NetLDEping&NetLCAspeed=$NetLCAspeed&NetLCAping=$NetLCAping&NetSTXspeed=$NetSTXspeed&NetSTXping=$NetSTXping&NetSWAspeed=$NetSWAspeed&NetSWAping=$NetSWAping&NetSDEspeed=$NetSDEspeed&NetSDEping=$NetSDEping&NetSSGspeed=$NetSSGspeed&NetSSGping=$NetSSGping&NetSCNspeed=$NetSCNspeed&NetSCNping=$NetSCNping&NetUPST=$NetUPST&NetDWST=$NetDWST&NetPiST=$NetPiST&NetUPCT=$NetUPCT&NetDWCT=$NetDWCT&NetPiCT=$NetPiCT&NetUPXT=$NetUPXT&NetDWXT=$NetDWXT&NetPiXT=$NetPiXT&NetUPSU=$NetUPSU&NetDWSU=$NetDWSU&NetPiSU=$NetPiSU&NetUPCU=$NetUPCU&NetDWCU=$NetDWCU&NetPiCU=$NetPiCU&NetUPXM=$NetUPXM&NetDWXM=$NetDWXM&NetPiXM=$NetPiXM&NetUPSM=$NetUPSM&NetDWSM=$NetDWSM&NetPiSM=$NetPiSM&NetUPCM=$NetUPCM&NetDWCM=$NetDWCM&NetPiCM=$NetPiCM&TSM=$TSM&TST=$TST&TSU=$TSU&TGM=$TGM&TGT=$TGT&TGU=$TGU&AKEY=$AKEY&Provider=$Provider"
 IKEY=$(curl "http://api.zbench.kirito.moe/getkey.php?AKEY=$AKEY" 2>/dev/null)
 echo "在线查看测评报告：https://zbench.kirito.moe/record-cn.php?IKEY=$IKEY"
 echo "您的测评报告已保存在 /root/report.html"
@@ -459,4 +423,3 @@ if [[ $ifreport == 'y' ]];then
     python -m SimpleHTTPServer 8001
     iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport 8001 -j ACCEPT
 fi
-
